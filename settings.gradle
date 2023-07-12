@@ -1,1 +1,4 @@
 rootProject.name = 'moshi-moshi'
+
+include 'client'
+include 'server'
