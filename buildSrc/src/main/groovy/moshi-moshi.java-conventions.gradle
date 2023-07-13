@@ -1,3 +1,5 @@
+// Como criar plugins internos no gradle ;)
+
 plugins {
     id 'java'
 }
