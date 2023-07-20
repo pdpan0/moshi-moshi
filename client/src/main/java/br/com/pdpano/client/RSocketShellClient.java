@@ -2,15 +2,15 @@ package br.com.pdpano.client;
 
 import io.rsocket.SocketAcceptor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
+import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
-import java.time.Duration;
 import java.util.UUID;
 
 @Slf4j
@@ -18,33 +18,32 @@ import java.util.UUID;
 public class RSocketShellClient {
 
     private final RSocketRequester rSocketRequester;
+    private final String client = UUID.randomUUID().toString();
 
-    @Autowired
     public RSocketShellClient(
-        RSocketRequester.Builder rSocketRequester,
-        RSocketStrategies strategies
+            RSocketRequester.Builder rSocketRequester,
+            RSocketStrategies strategies
     ) {
-        final String client = UUID.randomUUID().toString();
         log.info("Connecting using client ID: {}", client);
 
-        // (2)
         SocketAcceptor responder = RSocketMessageHandler.responder(strategies, new ClientHandler());
 
         this.rSocketRequester = rSocketRequester
-                .setupRoute("shell-client")
-                .setupData(client)
-                .rsocketStrategies(strategies)
-                .rsocketConnector(connector -> {
-                    connector.acceptor(responder);
-                    connector.reconnect(Retry.fixedDelay(2, Duration.ofSeconds(2)));
-                })
-                .connectTcp("localhost", 7000)
-                .block();
+            .setupRoute("connect")
+            .setupData(client)
+            .rsocketStrategies(strategies)
+            .rsocketConnector(connector -> {
+                connector.acceptor(responder);
+                connector.reconnect(Retry.indefinitely());
+            })
+            .tcp("localhost", 7000);
 
-        this.rSocketRequester.rsocket()
+        this.rSocketRequester.rsocketClient()
                 .onClose()
                 .doOnError(error -> log.warn("Connection CLOSED"))
                 .doFinally(customer -> log.info("Client DISCONNECTED"))
                 .subscribe();
+
+        this.rSocketRequester.rsocketClient().connect();
     }
 }
