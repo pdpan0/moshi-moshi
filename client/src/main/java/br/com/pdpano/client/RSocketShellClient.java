@@ -7,8 +7,6 @@ import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellOption;
-import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.util.UUID;
@@ -45,5 +43,12 @@ public class RSocketShellClient {
                 .subscribe();
 
         this.rSocketRequester.rsocketClient().connect();
+    }
+
+    @ShellMethod("clients")
+    public void clients() {
+        this.rSocketRequester.route("clients")
+                .retrieveFlux(String.class)
+                .subscribe(it -> log.info("Clients requested: {}", it));
     }
 }
