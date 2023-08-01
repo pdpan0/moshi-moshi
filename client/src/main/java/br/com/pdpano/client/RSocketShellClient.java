@@ -17,19 +17,19 @@ import java.util.UUID;
 public class RSocketShellClient {
 
     private final RSocketRequester rSocketRequester;
-    private final String client = UUID.randomUUID().toString();
+    private static final String CLIENT = UUID.randomUUID().toString();
 
     public RSocketShellClient(
             RSocketRequester.Builder rSocketRequester,
             RSocketStrategies strategies
     ) {
-        log.info("Connecting using client ID: {}", client);
+        log.info("Connecting using client ID: {}", CLIENT);
 
         SocketAcceptor responder = RSocketMessageHandler.responder(strategies, new ClientHandler());
 
         this.rSocketRequester = rSocketRequester
             .setupRoute("connect")
-            .setupData(client)
+            .setupData(CLIENT)
             .rsocketStrategies(strategies)
             .rsocketConnector(connector -> {
                 connector.acceptor(responder);
@@ -65,6 +65,7 @@ public class RSocketShellClient {
         this.rSocketRequester.route("send")
                 .data(message)
                 .send()
+                .doOnSuccess(it -> log.info("Message was sent successfully"))
                 .subscribe();
     }
 
