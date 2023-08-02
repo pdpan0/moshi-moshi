@@ -46,21 +46,21 @@ public class RSocketShellClient {
         this.rSocketRequester.rsocketClient().connect();
     }
 
-    @ShellMethod("clients")
+    @ShellMethod(key = "clients", value = "Get all clients connected")
     public void clients() {
         this.rSocketRequester.route("clients")
                 .retrieveFlux(String.class)
                 .subscribe(it -> log.info("Clients requested: {}", it));
     }
 
-    @ShellMethod("chat")
+    @ShellMethod(key = "chat", value = "Connects with chat.")
     public void chat() {
         this.rSocketRequester.route("chat")
                 .retrieveFlux(String.class)
                 .subscribe(it -> log.info("Getting chat: {}", it));
     }
 
-    @ShellMethod("send")
+    @ShellMethod(key = "send", value = "Sent messages to chat")
     public void send(@ShellOption String message) {
         this.rSocketRequester.route("send")
                 .data(message)
