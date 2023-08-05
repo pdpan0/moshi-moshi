@@ -48,8 +48,6 @@ class ServerController {
 
     @MessageMapping("chat")
     public Flux<String> chat(RSocketRequester requester) {
-        log.info("Opening new chat");
-
         final ClientRequester client = this.clients.stream()
                 .filter(it -> it.requester() == requester)
                 .findAny()
@@ -63,5 +61,10 @@ class ServerController {
     @MessageMapping("send")
     public void send(String message) {
         this.chat.send(message);
+    }
+
+    @MessageMapping("close")
+    public void close() {
+        this.chat.close();
     }
 }
